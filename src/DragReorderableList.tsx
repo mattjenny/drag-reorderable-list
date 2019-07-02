@@ -2,20 +2,17 @@ import React from 'react';
 import styled from 'styled-components';
 import { DragReorderableListItem } from './DragReorderableListItem';
 import { CHILD_HEIGHT } from './constants';
+import uuid from 'uuid';
 
 const ListWrapper = styled.div`
-
+    user-select: none;
 `;
 
-interface IDragWrapperProps {
-    top: number;
-}
 // TODO: variable left
-const DragWrapper = styled.div<IDragWrapperProps>`
+const DragWrapper = styled.div`
     position: absolute;
     z-index: 3;
     left: 0;
-    top: ${(props) => props.top}px;
     box-shadow: 3px 3px 5px 6px #ccc;
     border: 1px solid blue;
     width: 100%;
@@ -24,6 +21,22 @@ const DragWrapper = styled.div<IDragWrapperProps>`
 
 const PlaceholderDiv = styled.div`
     height: ${CHILD_HEIGHT}px;
+`;
+
+const ButtonContainer = styled.div`
+    padding: 10px;
+`;
+
+const AddButton = styled.button`
+    background: #28a745;
+    color: white;
+    border: none;
+    height: 30px;
+    width: 100px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
 `;
 
 interface TestData {
@@ -82,7 +95,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                     const item = this.state.childElements[id];
                     if (draggingItem && draggingItem.id === id) {
                         return (
-                            <PlaceholderDiv />
+                            <PlaceholderDiv key="placeholder" />
                         )
                     }
                     return (
@@ -96,6 +109,9 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                     );
                 })}
                 {this.maybeRenderDraggingItem()}
+                <ButtonContainer>
+                    <AddButton onClick={this.addItem}>+ Add Item</AddButton>
+                </ButtonContainer>
             </ListWrapper>
         )
     }
@@ -104,7 +120,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
         if (this.state.draggingItem && this.state.childElements[this.state.draggingItem.id]) {
             const item = this.state.childElements[this.state.draggingItem.id];
             return (
-                <DragWrapper top={this.state.mouseY - this.state.draggingItem.mouseOffset}>
+                <DragWrapper style={{ top: this.state.mouseY - this.state.draggingItem.mouseOffset }}>
                     <DragReorderableListItem
                         id={this.state.draggingItem.id}
                         title={item.title}
@@ -141,7 +157,6 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
     }
 
     private handleMouseMove = (e: any) => {
-        console.log('Mousemove: ', e);
         const { draggingItem } = this.state;
         if (draggingItem) {
             const index = this.state.childElementOrder.findIndex((itemId) => itemId === draggingItem.id);
@@ -164,6 +179,17 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
             this.setState({ draggingItem: undefined });
             window.removeEventListener('mousemove', this.handleMouseMove);
         }
+    }
+
+    private addItem = () => {
+        const id = uuid.v4();
+        this.setState({
+            childElementOrder: [ ...this.state.childElementOrder, id ],
+            childElements: {
+                ...this.state.childElements,
+                [id]: { title: 'Untitled item' },
+            },
+        });
     }
 
     // private childResized = (id: string, height: number) => {

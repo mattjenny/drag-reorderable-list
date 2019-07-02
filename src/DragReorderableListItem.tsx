@@ -5,6 +5,7 @@ import { CHILD_HEIGHT } from './constants';
 
 const ListItem = styled.div`
     height: ${CHILD_HEIGHT}px;
+    cursor: move;
 `;
 
 export interface ListItemDisplayProps {
