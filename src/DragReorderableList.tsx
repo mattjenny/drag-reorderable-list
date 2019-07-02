@@ -39,8 +39,18 @@ const AddButton = styled.button`
     cursor: pointer;
 `;
 
+const COLORS = [
+    "#DB3737",
+    "#137CBD",
+    "#D9822B",
+    "#29A634",
+    "#8F398F",
+    "#D99E0B",
+]
+
 interface TestData {
     title: string;
+    color: string;
 }
 
 interface State {
@@ -66,13 +76,18 @@ function swap(arr: Array<string>, idx1: number, idx2: number): Array<string> {
     })
 }
 
+function getNextColor(listSize: number) {
+    const idx = listSize % COLORS.length;
+    return COLORS[idx];
+}
+
 export class DragReorderableList extends React.PureComponent<{}, State> {
     public state: State = {
         draggingItem: undefined,
         childElements: {
-            t1: { title: "Test 1" },
-            t2: { title: "Test 2" },
-            t3: { title: "Test 3" },
+            t1: { title: "Test 1", color: getNextColor(0) },
+            t2: { title: "Test 2", color: getNextColor(1) },
+            t3: { title: "Test 3", color: getNextColor(2) },
         },
         childElementOrder: [ "t1", "t2", "t3" ],
         mouseY: 0,
@@ -103,6 +118,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                             key={id}
                             id={id}
                             title={item.title}
+                            color={item.color}
                             displayIndex={idx + 1}
                             onDrag={this.handleDragStart}
                         />
@@ -124,6 +140,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                     <DragReorderableListItem
                         id={this.state.draggingItem.id}
                         title={item.title}
+                        color={item.color}
                         onDrag={this.handleDragStart}
                     />
                 </DragWrapper>
@@ -187,7 +204,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
             childElementOrder: [ ...this.state.childElementOrder, id ],
             childElements: {
                 ...this.state.childElements,
-                [id]: { title: 'Untitled item' },
+                [id]: { title: 'Untitled item', color: getNextColor(this.state.childElementOrder.length) },
             },
         });
     }
