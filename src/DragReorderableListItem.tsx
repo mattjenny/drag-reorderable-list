@@ -1,20 +1,23 @@
 import React from 'react';
 import styled from 'styled-components';
+import { DemoListItemComponent } from './DemoListItemComponent';
 
 const ListItem = styled.li`
 
 `;
 
-export interface Props {
+export interface ListItemDisplayProps {
     title: string;
     displayIndex: number;
 }
 
-export class DragReorderableListItem extends React.PureComponent<Props, {}> {
+export interface OwnProps extends ListItemDisplayProps {}
+
+export class DragReorderableListItem extends React.PureComponent<OwnProps, {}> {
     public render() {
         return (
             <ListItem>
-                <p>{this.props.displayIndex}: {this.props.title}</p>
+                <DemoListItemComponent {...this.props} />
             </ListItem>
         )
     }
