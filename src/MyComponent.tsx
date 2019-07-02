@@ -58,7 +58,6 @@ export class MyComponent extends React.PureComponent<{}, State> {
     }
 
     private addItem = () => {
-        const id = uuid.v4();
         this.setState({
             data: [
                 ...this.state.data,
@@ -74,7 +73,6 @@ export class MyComponent extends React.PureComponent<{}, State> {
     private setTitle = (id: string, title: string) => {
         const index = this.state.data.findIndex((item) => item.id === id);
         if (index !== undefined) {
-            const item = this.state.data[index];
             const nextData = [ ...this.state.data ];
             nextData[index] = {
                 ...nextData[index],

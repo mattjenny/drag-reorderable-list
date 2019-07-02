@@ -4,7 +4,6 @@ import { Button } from '@blueprintjs/core';
 import { DragReorderableListItem } from './DragReorderableListItem';
 import { CHILD_HEIGHT } from './constants';
 import { TestData } from './types';
-import uuid from 'uuid';
 
 const ListWrapper = styled.div`
     user-select: none;
@@ -28,15 +27,6 @@ const PlaceholderDiv = styled.div`
 const ButtonContainer = styled.div`
     padding: 10px;
 `;
-
-const COLORS = [
-    "#DB3737",
-    "#137CBD",
-    "#D9822B",
-    "#29A634",
-    "#8F398F",
-    "#D99E0B",
-]
 
 interface Props {
     data: Array<TestData>,
