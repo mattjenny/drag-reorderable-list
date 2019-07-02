@@ -1,25 +1,37 @@
 import React from 'react';
 import styled from 'styled-components';
 import { DragReorderableListItem } from './DragReorderableListItem';
+import { CHILD_HEIGHT } from './constants';
 
-const ListWrapper = styled.ol`
-    list-style-type: none;
-    padding-inline-start: 0;
+const ListWrapper = styled.div`
+
+`;
+
+interface IDragWrapperProps {
+    top: number;
+}
+// TODO: variable left
+const DragWrapper = styled.div<IDragWrapperProps>`
+    position: absolute;
+    z-index: 3;
+    left: 0;
+    top: ${(props) => props.top}px;
+    box-shadow: 3px 3px 5px 6px #ccc;
+    border: 1px solid blue;
+`;
+
+const PlaceholderDiv = styled.div`
+    height: ${CHILD_HEIGHT}px;
 `;
 
 interface TestData {
     title: string;
 }
 
-interface ChildElement {
-    id: string;
-    height: number;
-    data: TestData;
-}
-
 interface State {
     draggingItem: DragData | undefined;
-    childElements: Array<ChildElement>;
+    childElements: { [id: string]: TestData };
+    mouseY: number;
 }
 
 const testData = [
@@ -34,13 +46,14 @@ interface DragData {
 }
 
 export class DragReorderableList extends React.PureComponent<{}, State> {
-    public state = {
+    public state: State = {
         draggingItem: undefined,
-        childElements: testData.map((item) => ({
-            id: item.id,
-            height: 100,
-            data: { title: item.title },
-        })),
+        childElements: {
+            t1: { title: "Test 1" },
+            t2: { title: "Test 2" },
+            t3: { title: "Test 3" },
+        },
+        mouseY: 0,
     }
 
     public componentDidMount() {
@@ -52,31 +65,56 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
     }
 
     public render() {
+        const { draggingItem } = this.state;
+
         return (
             <ListWrapper>
-                {this.state.childElements.map((item, idx) => (
-                    <DragReorderableListItem
-                        key={item.id}
-                        id={item.id}
-                        title={item.data.title}
-                        displayIndex={idx + 1}
-                        height={item.height}
-                        onDrag={this.handleDragStart}
-                        onResize={this.childResized}
-                    />
-                ))}
+                {Object.keys(this.state.childElements).map((id, idx) => {
+                    const item = this.state.childElements[id];
+                    if (draggingItem && draggingItem.id === id) {
+                        return (
+                            <PlaceholderDiv />
+                        )
+                    }
+                    return (
+                        <DragReorderableListItem
+                            key={id}
+                            id={id}
+                            title={item.title}
+                            displayIndex={idx + 1}
+                            onDrag={this.handleDragStart}
+                        />
+                    );
+                })}
+                {this.maybeRenderDraggingItem()}
             </ListWrapper>
         )
     }
 
-    private handleDragStart = (id: string, e: React.MouseEvent<HTMLLIElement>) => {
-        const childElement = this.state.childElements.find((item) => item.id === id);
+    private maybeRenderDraggingItem = () => {
+        if (this.state.draggingItem && this.state.childElements[this.state.draggingItem.id]) {
+            const item = this.state.childElements[this.state.draggingItem.id];
+            return (
+                <DragWrapper top={this.state.mouseY - this.state.draggingItem.mouseOffset}>
+                    <DragReorderableListItem
+                        id={this.state.draggingItem.id}
+                        title={item.title}
+                        onDrag={this.handleDragStart}
+                    />
+                </DragWrapper>
+            );
+        }
+    }
+
+    private handleDragStart = (id: string, e: React.MouseEvent<HTMLDivElement>) => {
+        const childElement = this.state.childElements[id];
         if (childElement) {
             this.setState({
                 draggingItem: {
                     id,
                     mouseOffset: 5,
                 },
+                mouseY: e.clientY,
             });
 
             window.addEventListener('mousemove', this.handleMouseMove);
@@ -85,6 +123,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
 
     private handleMouseMove = (e: any) => {
         console.log('Mousemove: ', e);
+        this.setState({ mouseY: e.clientY });
     }
 
     private handleMouseUp = () => {
@@ -95,15 +134,15 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
         }
     }
 
-    private childResized = (id: string, height: number) => {
-        const childElementIdx = this.state.childElements.findIndex((item) => item.id === id);
-        if (childElementIdx) {
-            const updatedChildElements = [ ...this.state.childElements ];
-            updatedChildElements[childElementIdx] = {
-                ...updatedChildElements[childElementIdx],
-                height,
-            };
-            this.setState({ childElements: updatedChildElements });
-        }
-    }
+    // private childResized = (id: string, height: number) => {
+    //     const childElementIdx = this.state.childElements.findIndex((item) => item.id === id);
+    //     if (childElementIdx) {
+    //         const updatedChildElements = [ ...this.state.childElements ];
+    //         updatedChildElements[childElementIdx] = {
+    //             ...updatedChildElements[childElementIdx],
+    //             height,
+    //         };
+    //         this.setState({ childElements: updatedChildElements });
+    //     }
+    // }
 }
