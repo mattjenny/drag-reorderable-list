@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { EditableText } from '@blueprintjs/core';
 import { CHILD_HEIGHT } from './constants';
 
 const Container = styled.div`
@@ -33,6 +34,7 @@ export interface DragReorderableListItemProps {
     displayIndex?: number;
     id: string;
     onDrag: (id: string, e: React.MouseEvent<HTMLDivElement>) => void;
+    setTitle: (id: string, title: string) => void;
 }
 
 export class DragReorderableListItem extends React.PureComponent<DragReorderableListItemProps, {}> {
@@ -43,7 +45,7 @@ export class DragReorderableListItem extends React.PureComponent<DragReorderable
                     <p>{this.props.displayIndex}</p>
                 </NumberComponent>
                 <MainContent>
-                    <p>{this.props.title}</p>
+                    <EditableText value={this.props.title} onChange={this.updateTitle}/>
                 </MainContent>
             </Container>
         )
@@ -51,5 +53,9 @@ export class DragReorderableListItem extends React.PureComponent<DragReorderable
 
     private handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         this.props.onDrag(this.props.id, e);
+    }
+
+    private updateTitle = (value: string) => {
+        this.props.setTitle(this.props.id, value);
     }
 }

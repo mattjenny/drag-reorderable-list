@@ -121,6 +121,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                             color={item.color}
                             displayIndex={idx + 1}
                             onDrag={this.handleDragStart}
+                            setTitle={this.setTitle}
                         />
                     );
                 })}
@@ -142,6 +143,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                         title={item.title}
                         color={item.color}
                         onDrag={this.handleDragStart}
+                        setTitle={this.setTitle}
                     />
                 </DragWrapper>
             );
@@ -207,6 +209,21 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                 [id]: { title: 'Untitled item', color: getNextColor(this.state.childElementOrder.length) },
             },
         });
+    }
+
+    private setTitle = (id: string, title: string) => {
+        const item = this.state.childElements[id];
+        if (item) {
+            this.setState({
+                childElements: {
+                    ...this.state.childElements,
+                    [id]: {
+                        ...item,
+                        title,
+                    },
+                },
+            });
+        }
     }
 
     // private childResized = (id: string, height: number) => {
