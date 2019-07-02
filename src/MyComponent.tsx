@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button } from '@blueprintjs/core';
-import { DragReorderableListItem } from './DragReorderableListItem';
 import uuid from 'uuid';
+import { TestData } from './types';
+import { DragReorderableList } from './DragReorderableList';
 
 const COLORS = [
     "#DB3737",
@@ -12,19 +12,8 @@ const COLORS = [
     "#D99E0B",
 ]
 
-interface TestData {
-    id: string;
-    title: string;
-    color: string;
-}
-
 interface State {
     data: Array<TestData>;
-}
-
-interface DragData {
-    id: string;
-    mouseOffset: number;
 }
 
 function swap(arr: Array<TestData>, idx1: number, idx2: number): Array<TestData> {
@@ -43,7 +32,7 @@ function getNextColor(listSize: number) {
     return COLORS[idx];
 }
 
-export class DragReorderableList extends React.PureComponent<{}, State> {
+export class MyComponent extends React.PureComponent<{}, State> {
     public state: State = {
         data: [
             { id: "t1", title: "Test 1", color: getNextColor(0) },
@@ -54,7 +43,13 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
 
     public render() {
         return (
-            
+            <DragReorderableList
+                data={this.state.data}
+                swapItems={this.swapItems}
+                addItem={this.addItem}
+                setTitle={this.setTitle}
+                removeItem={this.removeItem}
+            />
         )
     }
 
@@ -80,14 +75,13 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
         const index = this.state.data.findIndex((item) => item.id === id);
         if (index !== undefined) {
             const item = this.state.data[index];
+            const nextData = [ ...this.state.data ];
+            nextData[index] = {
+                ...nextData[index],
+                title,
+            };
             this.setState({
-                data: {
-                    ...this.state.data,
-                    [index]: {
-                        ...item,
-                        title,
-                    },
-                }
+                data: nextData,
             });
         }
     }

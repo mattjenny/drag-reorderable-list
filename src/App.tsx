@@ -1,12 +1,12 @@
 import React from 'react';
 import './App.css';
 import '@blueprintjs/core/lib/css/blueprint.css';
-import { DragReorderableList } from './DragReorderableList';
+import { MyComponent } from './MyComponent';
 
 const App: React.FC = () => {
   return (
     <div className="App">
-      <DragReorderableList />
+      <MyComponent />
     </div>
   );
 }
