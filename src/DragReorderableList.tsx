@@ -18,6 +18,8 @@ const DragWrapper = styled.div<IDragWrapperProps>`
     top: ${(props) => props.top}px;
     box-shadow: 3px 3px 5px 6px #ccc;
     border: 1px solid blue;
+    width: 100%;
+    background: white;
 `;
 
 const PlaceholderDiv = styled.div`
@@ -31,18 +33,24 @@ interface TestData {
 interface State {
     draggingItem: DragData | undefined;
     childElements: { [id: string]: TestData };
+    childElementOrder: Array<string>;
     mouseY: number;
 }
-
-const testData = [
-    { id: "t1", title: "Test 1" },
-    { id: "t2", title: "Test 2" },
-    { id: "t3", title: "Test 3" },
-]
 
 interface DragData {
     id: string;
     mouseOffset: number;
+}
+
+function swap(arr: Array<string>, idx1: number, idx2: number): Array<string> {
+    return arr.map((id, idx) => {
+        if (idx === idx1) {
+            return arr[idx2];
+        } else if (idx === idx2) {
+            return arr[idx1];
+        }
+        return id;
+    })
 }
 
 export class DragReorderableList extends React.PureComponent<{}, State> {
@@ -53,6 +61,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
             t2: { title: "Test 2" },
             t3: { title: "Test 3" },
         },
+        childElementOrder: [ "t1", "t2", "t3" ],
         mouseY: 0,
     }
 
@@ -69,7 +78,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
 
         return (
             <ListWrapper>
-                {Object.keys(this.state.childElements).map((id, idx) => {
+                {this.state.childElementOrder.map((id, idx) => {
                     const item = this.state.childElements[id];
                     if (draggingItem && draggingItem.id === id) {
                         return (
@@ -108,11 +117,13 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
 
     private handleDragStart = (id: string, e: React.MouseEvent<HTMLDivElement>) => {
         const childElement = this.state.childElements[id];
-        if (childElement) {
+        const index = this.state.childElementOrder.findIndex((itemId) => itemId === id);
+        if (childElement && index !== undefined) {
+            const itemTop = index * CHILD_HEIGHT;
             this.setState({
                 draggingItem: {
                     id,
-                    mouseOffset: 5,
+                    mouseOffset: e.clientY - itemTop,
                 },
                 mouseY: e.clientY,
             });
@@ -121,9 +132,30 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
         }
     }
 
+    private getTopY(clientY: number, mouseOffset: number) {
+        return clientY - mouseOffset;
+    }
+
+    private getCenterY(top: number, height: number) {
+        return top + (height / 2);
+    }
+
     private handleMouseMove = (e: any) => {
         console.log('Mousemove: ', e);
-        this.setState({ mouseY: e.clientY });
+        const { draggingItem } = this.state;
+        if (draggingItem) {
+            const index = this.state.childElementOrder.findIndex((itemId) => itemId === draggingItem.id);
+            const topY = this.getTopY(e.clientY, draggingItem.mouseOffset);
+            const aboveItemCenter = this.getCenterY((index - 1) * CHILD_HEIGHT, CHILD_HEIGHT);
+            const itemCenter = this.getCenterY((index) * CHILD_HEIGHT, CHILD_HEIGHT);
+            
+            if (index > 0 && topY < aboveItemCenter) {
+                this.setState({ childElementOrder: swap(this.state.childElementOrder, index - 1, index) });
+            } else if (index < this.state.childElementOrder.length - 1 && topY > itemCenter) {
+                this.setState({ childElementOrder: swap(this.state.childElementOrder, index, index + 1) });
+            }
+            this.setState({ mouseY: e.clientY });
+        }
     }
 
     private handleMouseUp = () => {
