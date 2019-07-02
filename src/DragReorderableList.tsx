@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Button } from '@blueprintjs/core';
 import { DragReorderableListItem } from './DragReorderableListItem';
 import { CHILD_HEIGHT } from './constants';
 import uuid from 'uuid';
@@ -25,18 +26,6 @@ const PlaceholderDiv = styled.div`
 
 const ButtonContainer = styled.div`
     padding: 10px;
-`;
-
-const AddButton = styled.button`
-    background: #28a745;
-    color: white;
-    border: none;
-    height: 30px;
-    width: 100px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
 `;
 
 const COLORS = [
@@ -121,13 +110,14 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                             color={item.color}
                             displayIndex={idx + 1}
                             onDrag={this.handleDragStart}
+                            removeItem={this.removeItem}
                             setTitle={this.setTitle}
                         />
                     );
                 })}
                 {this.maybeRenderDraggingItem()}
                 <ButtonContainer>
-                    <AddButton onClick={this.addItem}>+ Add Item</AddButton>
+                    <Button onClick={this.addItem} icon="plus" intent="success" text="Add item" />
                 </ButtonContainer>
             </ListWrapper>
         )
@@ -143,6 +133,7 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                         title={item.title}
                         color={item.color}
                         onDrag={this.handleDragStart}
+                        removeItem={this.removeItem}
                         setTitle={this.setTitle}
                     />
                 </DragWrapper>
@@ -222,6 +213,15 @@ export class DragReorderableList extends React.PureComponent<{}, State> {
                         title,
                     },
                 },
+            });
+        }
+    }
+
+    private removeItem = (id: string) => {
+        const item = this.state.childElements[id];
+        if (item) {
+            this.setState({
+                childElementOrder: this.state.childElementOrder.filter((itemId) => itemId !== id),
             });
         }
     }
