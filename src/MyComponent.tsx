@@ -45,6 +45,7 @@ export class MyComponent extends React.PureComponent<{}, State> {
         return (
             <DragReorderableList
                 data={this.state.data}
+                setItems={this.setItems}
                 swapItems={this.swapItems}
                 addItem={this.addItem}
                 setTitle={this.setTitle}
@@ -91,5 +92,11 @@ export class MyComponent extends React.PureComponent<{}, State> {
                 data: this.state.data.filter((item) => item.id !== id),
             });
         }
+    }
+
+    private setItems = (data: Array<TestData>) => {
+        this.setState({
+            data,
+        });
     }
 }

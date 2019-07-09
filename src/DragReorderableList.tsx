@@ -30,6 +30,7 @@ const ButtonContainer = styled.div`
 
 interface Props {
     data: Array<TestData>,
+    setItems: (items: Array<TestData>) => void;
     swapItems: (idx1: number, idx2: number) => void;
     addItem:() => void;
     removeItem:(id: string) => void;
@@ -39,17 +40,20 @@ interface Props {
 interface State {
     draggingItem: DragData | undefined;
     mouseY: number;
+    undoRedoStack: Array<Array<TestData>>,
 }
 
 interface DragData {
     id: string;
     mouseOffset: number;
+    prevData: Array<TestData>;
 }
 
 export class DragReorderableList extends React.PureComponent<Props, State> {
     public state: State = {
         draggingItem: undefined,
         mouseY: 0,
+        undoRedoStack: [],
     }
 
     public componentDidMount() {
@@ -87,6 +91,7 @@ export class DragReorderableList extends React.PureComponent<Props, State> {
                 {this.maybeRenderDraggingItem()}
                 <ButtonContainer>
                     <Button onClick={this.props.addItem} icon="plus" intent="success" text="Add item" />
+                    <Button onClick={this.undo} text="Undo" disabled={this.state.undoRedoStack.length === 0} />
                 </ButtonContainer>
             </ListWrapper>
         )
@@ -122,6 +127,7 @@ export class DragReorderableList extends React.PureComponent<Props, State> {
                 draggingItem: {
                     id,
                     mouseOffset: e.clientY - itemTop,
+                    prevData: this.props.data,
                 },
                 mouseY: e.clientY,
             });
@@ -157,8 +163,27 @@ export class DragReorderableList extends React.PureComponent<Props, State> {
 
     private handleMouseUp = () => {
         if (this.state.draggingItem) {
-            this.setState({ draggingItem: undefined });
+            const isReordered = !this.state.draggingItem.prevData.every((item, idx) => {
+                return this.props.data[idx] && this.props.data[idx].id === item.id;
+            });
+            const newState: Partial<State> = { draggingItem: undefined };
+            if (isReordered) {
+                newState.undoRedoStack = [
+                    ...this.state.undoRedoStack,
+                    this.state.draggingItem.prevData,
+                ];
+            }
+            this.setState(newState as any);
             window.removeEventListener('mousemove', this.handleMouseMove);
+        }
+    }
+
+    private undo = () => {
+        if (this.state.undoRedoStack.length > 0) {
+            this.props.setItems(this.state.undoRedoStack[this.state.undoRedoStack.length - 1]);
+            this.setState({
+                undoRedoStack: this.state.undoRedoStack.slice(0, this.state.undoRedoStack.length - 1),
+            });
         }
     }
 }
